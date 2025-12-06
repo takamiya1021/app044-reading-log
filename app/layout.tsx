@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Playfair_Display, Lato } from "next/font/google";
 import "./globals.css";
-import ApiKeyModal from "@/components/ApiKeyModal";
+
 
 const playfair = Playfair_Display({
   variable: "--font-heading",
@@ -47,14 +47,14 @@ export default function RootLayout({
             backgroundRepeat: "no-repeat",
           }}
         />
-        
+
         {/* Overlay for better readability */}
         <div className="fixed inset-0 z-[-1] bg-black/50" />
 
         <main className="flex-grow container mx-auto px-4 py-8">
           {children}
         </main>
-        <ApiKeyModal />
+
       </body>
     </html>
   );

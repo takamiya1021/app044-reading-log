@@ -50,10 +50,10 @@ export async function generateImageFromImpression(bookTitle: string, history: { 
     // 1. Generate a prompt for the image based on the chat history
     const textModel = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
     const promptGenChat = textModel.startChat({
-        history: history.map(h => ({
-            role: h.role,
-            parts: [{ text: h.parts }]
-          })),
+      history: history.map(h => ({
+        role: h.role,
+        parts: [{ text: h.parts }]
+      })),
     });
 
     const promptRequest = `Based on our discussion about "${bookTitle}", create a detailed prompt for an AI image generator to visualize the user's impression or the scene we discussed. The prompt should be in English, descriptive, and artistic. Output ONLY the prompt.`;
@@ -64,17 +64,17 @@ export async function generateImageFromImpression(bookTitle: string, history: { 
     // ナノバナナとプロバナナで設定が異なる
     const modelConfig = selectedModel === "nano-banana"
       ? {
-          model: modelName,
-          generationConfig: {
-            // IMAGE のみを指定して画像生成を強制（じぇみからのアドバイス）
-            responseModalities: ['IMAGE'],
-          },
-        }
+        model: modelName,
+        generationConfig: {
+          // IMAGE のみを指定して画像生成を強制（じぇみからのアドバイス）
+          responseModalities: ['IMAGE'],
+        },
+      }
       : {
-          model: modelName,
-        };
+        model: modelName,
+      };
 
-    const imageModel = genAI.getGenerativeModel(modelConfig);
+    const imageModel = genAI.getGenerativeModel(modelConfig as any);
     const result = await imageModel.generateContent(imagePrompt);
     const response = result.response;
 
@@ -87,16 +87,16 @@ export async function generateImageFromImpression(bookTitle: string, history: { 
     console.log("Part:", JSON.stringify(part, null, 2));
 
     if (part && part.inlineData) {
-        // 3. Translate the English prompt to Japanese for display
-        const translationResult = await promptGenChat.sendMessage(
-          `Translate the following English text to Japanese. Output ONLY the Japanese translation:\n\n${imagePrompt}`
-        );
-        const japanesePrompt = translationResult.response.text();
+      // 3. Translate the English prompt to Japanese for display
+      const translationResult = await promptGenChat.sendMessage(
+        `Translate the following English text to Japanese. Output ONLY the Japanese translation:\n\n${imagePrompt}`
+      );
+      const japanesePrompt = translationResult.response.text();
 
-        return {
-            image: `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`,
-            prompt: japanesePrompt
-        };
+      return {
+        image: `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`,
+        prompt: japanesePrompt
+      };
     }
 
     // エラー時にレスポンス詳細を返す
@@ -120,15 +120,15 @@ export async function findAuthor(bookTitle: string) {
 
     // Format candidates for AI selection
     const candidates = data.items.map((item: any, index: number) => {
-        const info = item.volumeInfo;
-        const authors = info.authors ? info.authors.join(", ") : "Unknown";
-        return `${index + 1}. Title: ${info.title}, Author(s): ${authors}, Description: ${info.description ? info.description.substring(0, 100) + "..." : "N/A"}`;
+      const info = item.volumeInfo;
+      const authors = info.authors ? info.authors.join(", ") : "Unknown";
+      return `${index + 1}. Title: ${info.title}, Author(s): ${authors}, Description: ${info.description ? info.description.substring(0, 100) + "..." : "N/A"}`;
     }).join("\n");
 
     // 2. Use Gemini to pick the most likely/famous one
     const genAI = await getGenAI();
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-    
+
     const prompt = `
       The user is searching for the author of the book "${bookTitle}".
       Here are the top search results from Google Books:
@@ -146,10 +146,10 @@ export async function findAuthor(bookTitle: string) {
 
     // Fallback: If AI returns something weird or empty, use the first result from API
     if (!author || author.length > 50) {
-       const firstBook = data.items[0].volumeInfo;
-       if (firstBook.authors && firstBook.authors.length > 0) {
-         return firstBook.authors.join(", ");
-       }
+      const firstBook = data.items[0].volumeInfo;
+      if (firstBook.authors && firstBook.authors.length > 0) {
+        return firstBook.authors.join(", ");
+      }
     }
 
     return author;
@@ -158,14 +158,14 @@ export async function findAuthor(bookTitle: string) {
     console.error("Hybrid Author Search Error:", error);
     // Fallback if AI fails completely
     try {
-        const response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=intitle:${encodeURIComponent(bookTitle)}&maxResults=1`);
-        const data = await response.json();
-        if (data.items && data.items.length > 0) {
-            const book = data.items[0].volumeInfo;
-            if (book.authors) return book.authors.join(", ");
-        }
+      const response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=intitle:${encodeURIComponent(bookTitle)}&maxResults=1`);
+      const data = await response.json();
+      if (data.items && data.items.length > 0) {
+        const book = data.items[0].volumeInfo;
+        if (book.authors) return book.authors.join(", ");
+      }
     } catch (e) {
-        // Ignore
+      // Ignore
     }
     return null;
   }
