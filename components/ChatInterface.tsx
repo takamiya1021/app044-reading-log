@@ -239,48 +239,74 @@ export default function ChatInterface({ bookId, bookTitle }: ChatInterfaceProps)
 
   const canSend = !isLoading && input.trim().length > 0;
 
+  // チャットメッセージと画像を時系列順に統合
+  const allItems = [
+    ...session.messages.map((msg, idx) => ({
+      type: 'message' as const,
+      data: msg,
+      timestamp: msg.timestamp,
+      key: `msg-${idx}`
+    })),
+    ...(visualizations || []).map(viz => ({
+      type: 'visualization' as const,
+      data: viz,
+      timestamp: viz.createdAt,
+      key: `viz-${viz.id}`
+    }))
+  ].sort((a, b) => {
+    const timeA = a.timestamp instanceof Date ? a.timestamp.getTime() : new Date(a.timestamp).getTime();
+    const timeB = b.timestamp instanceof Date ? b.timestamp.getTime() : new Date(b.timestamp).getTime();
+    return timeA - timeB;
+  });
+
   return (
       <div className="flex flex-col h-[600px] glass-panel rounded-lg overflow-hidden relative">
         <div className="flex-grow overflow-y-auto p-4 space-y-4">
-        {session.messages.map((msg, idx) => (
-          <div
-            key={idx}
-            className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-          >
-            <div
-              className={`max-w-[80%] p-3 rounded-lg ${
-                msg.role === "user"
-                  ? "bg-amber-800/80 text-white rounded-br-none"
-                  : "bg-black/40 text-gray-200 rounded-bl-none"
-              }`}
-            >
-              <p className="whitespace-pre-wrap">{msg.content}</p>
-            </div>
-          </div>
-        ))}
-
-        {/* データベースに保存された可視化画像 */}
-        {visualizations && visualizations.map((viz) => (
-          <div key={viz.id} className="flex justify-center my-4">
-            <div className="bg-black/60 border border-amber-500/50 p-4 rounded-lg max-w-[90%] w-full">
-              <div className="flex justify-between items-start mb-2">
-                <h4 className="text-amber-400 font-bold">生成されたイメージ</h4>
-                <button
-                  onClick={() => handleDeleteVisualization(viz.id)}
-                  className="text-red-400 hover:text-red-300 text-sm"
+        {allItems.map((item) => {
+          if (item.type === 'message') {
+            const msg = item.data;
+            return (
+              <div
+                key={item.key}
+                className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+              >
+                <div
+                  className={`max-w-[80%] p-3 rounded-lg ${
+                    msg.role === "user"
+                      ? "bg-amber-800/80 text-white rounded-br-none"
+                      : "bg-black/40 text-gray-200 rounded-bl-none"
+                  }`}
                 >
-                  削除
-                </button>
-              </div>
-              <p className="text-sm text-gray-300 italic mb-4">{viz.content}</p>
-              {viz.aiGeneratedImage && (
-                <div className="w-full rounded overflow-hidden">
-                  <img src={viz.aiGeneratedImage} alt="Generated Impression" className="w-full h-auto" />
+                  <p className="whitespace-pre-wrap">{msg.content}</p>
                 </div>
-              )}
-            </div>
-          </div>
-        ))}
+              </div>
+            );
+          } else {
+            // visualization
+            const viz = item.data;
+            return (
+              <div key={item.key} className="flex justify-center my-4">
+                <div className="bg-black/60 border border-amber-500/50 p-4 rounded-lg max-w-[90%] w-full">
+                  <div className="flex justify-between items-start mb-2">
+                    <h4 className="text-amber-400 font-bold">生成されたイメージ</h4>
+                    <button
+                      onClick={() => handleDeleteVisualization(viz.id)}
+                      className="text-red-400 hover:text-red-300 text-sm"
+                    >
+                      削除
+                    </button>
+                  </div>
+                  <p className="text-sm text-gray-300 italic mb-4">{viz.content}</p>
+                  {viz.aiGeneratedImage && (
+                    <div className="w-full rounded overflow-hidden">
+                      <img src={viz.aiGeneratedImage} alt="Generated Impression" className="w-full h-auto" />
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          }
+        })}
 
         {errorMessage && (
           <div className="flex justify-center my-4">
@@ -292,8 +318,16 @@ export default function ChatInterface({ bookId, bookTitle }: ChatInterfaceProps)
         )}
         {isLoading && (
           <div className="flex justify-start">
-             <div className="bg-black/40 p-3 rounded-lg rounded-bl-none">
-               <span className="animate-pulse">思考中...</span>
+             <div className="bg-black/40 p-4 rounded-lg rounded-bl-none flex items-center space-x-3">
+               <div className="animate-spin rounded-full h-5 w-5 border-2 border-amber-500 border-t-transparent"></div>
+               <div className="flex items-center space-x-1">
+                 <span className="text-gray-300">AIが思考中</span>
+                 <span className="flex space-x-1">
+                   <span className="animate-bounce">.</span>
+                   <span className="animate-bounce" style={{ animationDelay: '0.1s' }}>.</span>
+                   <span className="animate-bounce" style={{ animationDelay: '0.2s' }}>.</span>
+                 </span>
+               </div>
              </div>
           </div>
         )}
