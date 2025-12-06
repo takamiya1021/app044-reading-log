@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 
 interface ApiKeyModalProps {
   isOpen: boolean;
@@ -46,9 +47,10 @@ export default function ApiKeyModal({ isOpen, onClose }: ApiKeyModalProps) {
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/80 backdrop-blur-sm">
-      <div className="bg-gray-900 border border-amber-500/30 p-6 rounded-lg w-full max-w-md shadow-2xl">
+  const modalContent = (
+    <div className="fixed inset-0 z-[10000] bg-black/80 backdrop-blur-sm overflow-y-auto">
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="bg-gray-900 border border-amber-500/30 p-6 rounded-lg w-full max-w-md my-8 shadow-2xl">
         <h2 className="text-xl font-bold text-amber-100 mb-4 font-serif">Gemini APIキー設定</h2>
         <p className="text-gray-400 text-sm mb-2">
           AI機能を使用するには、Google Gemini APIキーを入力してください。
@@ -119,7 +121,11 @@ export default function ApiKeyModal({ isOpen, onClose }: ApiKeyModalProps) {
             </div>
           </div>
         </div>
+        </div>
       </div>
     </div>
   );
+
+  // Use portal to render modal at document.body level
+  return typeof window !== 'undefined' ? createPortal(modalContent, document.body) : null;
 }
