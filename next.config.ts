@@ -9,9 +9,10 @@ const withPWA = withPWAInit({
   disable: process.env.NODE_ENV === "development",
   workboxOptions: {
     disableDevLogs: true,
-    skipWaiting: true,
+    skipWaiting: false,  // ユーザー操作で更新するためfalse
     clientsClaim: true,
     cleanupOutdatedCaches: true,
+    importScripts: ["/sw-skip-waiting.js"],  // SKIP_WAITINGメッセージリスナー
   },
 });
 

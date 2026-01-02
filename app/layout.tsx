@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Playfair_Display, Lato } from "next/font/google";
 import "./globals.css";
+import { UpdateBanner } from "@/components/UpdateBanner";
 
 
 const playfair = Playfair_Display({
@@ -55,6 +56,8 @@ export default function RootLayout({
           {children}
         </main>
 
+        {/* PWA更新通知バナー */}
+        <UpdateBanner />
       </body>
     </html>
   );
