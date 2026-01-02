@@ -16,7 +16,7 @@ const lato = Lato({
 });
 
 export const metadata: Metadata = {
-  title: "My Reading Log",
+  title: `My Reading Log ${process.env.NEXT_PUBLIC_APP_VERSION || ""}`.trim(),
   description: "Your personal reading companion",
   manifest: "/manifest.json",
 };

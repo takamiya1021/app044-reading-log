@@ -2,13 +2,19 @@ import type { NextConfig } from "next";
 import withPWAInit from "@ducanh2912/next-pwa";
 import { execSync } from "child_process";
 
+import packageJson from "./package.json";
+
 // Gitタグからバージョンを取得
 const getGitVersion = (): string => {
   try {
-    // git describe --tags --always でタグを取得
-    return execSync("git describe --tags --always", { encoding: "utf-8" }).trim();
+    const gitVersion = execSync("git describe --tags --always", { encoding: "utf-8" }).trim();
+    // タグが見つからずハッシュ値のみ（7文字以上の16進数）の場合はpackage.jsonのバージョンを併記
+    if (/^[0-9a-f]{7,}$/.test(gitVersion)) {
+      return `v${packageJson.version}-${gitVersion}`;
+    }
+    return gitVersion;
   } catch {
-    return "v0.0.0";
+    return `v${packageJson.version}`;
   }
 };
 

@@ -43,10 +43,7 @@ export default function Home() {
       <header className="glass-panel p-6 rounded-lg space-y-4">
         <div className="flex justify-between items-center">
           <div>
-            <div className="flex items-baseline gap-2">
-              <h1 className="text-3xl font-bold font-serif text-amber-100">読書ログ</h1>
-              <span className="text-xs text-amber-300/60">{process.env.NEXT_PUBLIC_APP_VERSION}</span>
-            </div>
+            <h1 className="text-3xl font-bold font-serif text-amber-100">読書ログ</h1>
             <p className="text-gray-300">あなたのための読書記録</p>
           </div>
           <div className="flex items-center space-x-4">
