@@ -8,11 +8,12 @@ import packageJson from "./package.json";
 const getGitVersion = (): string => {
   try {
     const gitVersion = execSync("git describe --tags --always", { encoding: "utf-8" }).trim();
-    // タグが見つからずハッシュ値のみ（7文字以上の16進数）の場合はpackage.jsonのバージョンを併記
+    // もしタグが見つからずハッシュ値（7文字以上の16進数）だけが返ってきた場合、
+    // package.jsonのバージョンをベースにして表示
     if (/^[0-9a-f]{7,}$/.test(gitVersion)) {
       return `v${packageJson.version}-${gitVersion}`;
     }
-    return gitVersion;
+    return gitVersion.startsWith("v") ? gitVersion : `v${gitVersion}`;
   } catch {
     return `v${packageJson.version}`;
   }
