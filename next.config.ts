@@ -1,5 +1,16 @@
 import type { NextConfig } from "next";
 import withPWAInit from "@ducanh2912/next-pwa";
+import { execSync } from "child_process";
+
+// Gitタグからバージョンを取得
+const getGitVersion = (): string => {
+  try {
+    // git describe --tags --always でタグを取得
+    return execSync("git describe --tags --always", { encoding: "utf-8" }).trim();
+  } catch {
+    return "v0.0.0";
+  }
+};
 
 const withPWA = withPWAInit({
   dest: "public",
@@ -17,7 +28,10 @@ const withPWA = withPWAInit({
 });
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  turbopack: {},  // Turbopack設定（警告抑制）
+  env: {
+    NEXT_PUBLIC_APP_VERSION: getGitVersion(),
+  },
 };
 
 export default withPWA(nextConfig);
